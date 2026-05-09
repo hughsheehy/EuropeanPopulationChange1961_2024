@@ -319,7 +319,7 @@
     function buildSparkline(series) {
       const width = 360;
       const height = 120;
-      const padX = 12;
+      const padX = 45;
       const padY = 10;
       const xs = series.map((_, index) => padX + (index / (series.length - 1 || 1)) * (width - padX * 2));
       const values = series.map((d) => d.value);
@@ -341,9 +341,20 @@
           <text x="${cx}" y="${height - 2}" text-anchor="middle" font-size="10" fill="#64748b">${String(d.year).slice(2)}</text>`;
       }).join('');
 
+      const yAxisLabels = [
+        { value: max, label: formatNumber(Math.round(max)) },
+        { value: (max + min) / 2, label: formatNumber(Math.round((max + min) / 2)) },
+        { value: min, label: formatNumber(Math.round(min)) }
+      ].map(item => {
+        const y = yScale(item.value);
+        return `<text x="38" y="${y + 3}" text-anchor="end" font-size="9" fill="#94a3b8">${item.label}</text>`;
+      }).join('');
+
       return `
         <svg viewBox="0 0 ${width} ${height}" aria-label="Population trend chart">
           <line x1="${padX}" y1="${height - padY}" x2="${width - padX}" y2="${height - padY}" stroke="#cbd5e1" stroke-width="1" />
+          <line x1="40" y1="0" x2="40" y2="${height}" stroke="#e2e8f0" stroke-width="0.5" />
+          ${yAxisLabels}
           <polyline fill="none" stroke="#155b6a" stroke-width="2.5" points="${polyline}" />
           ${points}
         </svg>
