@@ -1,29 +1,97 @@
-# Docs Folder
+# European Population Change 1961–2024
 
-This folder serves two purposes:
+An interactive web map visualizing population changes across European local administrative units (LAUs) over six decades.
 
-- the GitHub Pages site itself
-- the source materials and scripts used to build the map
+## Features
 
-## Live site
+- **Interactive map** powered by MapLibre GL
+- **Historical data** from 1961 to 2024 based on ARDECO dataset
+- **LAU boundaries** covering multiple boundary versions (2011, 2021, 2024)
+- **Population decline visualization** with color-coded regions
+- **Responsive design** for desktop and mobile
 
-- [index.html](./index.html)
-- [data](./data/)
+## Live Site
 
-The page loads the chunked GeoJSON files from `data/`.
+View the map: [GitHub Pages deployment](https://hughsheehy.github.io/EuropeanPopulationChange1961_2024/)
 
-## Source tree
+## Project Structure
 
-- [Europopulation](./Europopulation/)
-  - original ARDECO workspace moved under `docs/`
-  - merge outputs
-  - source boundaries
-  - crosswalk files
-  - original helper scripts
+```
+.
+├── index.html                 # Main map application
+├── data/                      # Pre-processed GeoJSON chunks for the map
+├── Europopulation/            # Primary source materials
+│   ├── ARDECO datasets        # Population time-series data
+│   ├── LAU boundary files     # Administrative unit boundaries
+│   ├── Processed outputs      # Merged and crosswalked datasets
+│   └── Helper scripts         # Data transformation utilities
+├── scripts/                   # Dataset build and processing pipeline
+├── original-data/             # Snapshot of original source data
+└── supporting-data/           # Auxiliary datasets and crosswalks
+```
 
-- [scripts](./scripts/)
-  - wrapper scripts that point at `docs/Europopulation`
-  - final Pages dataset build
-  - GeoJSON chunk split
+## Data Sources
 
-The older `original-data` and `supporting-data` folders are retained as copied snapshots, but `docs/Europopulation` is now the main source location.
+- **ARDECO** (Analysis of Regional Dynamics in the European Union Concerning Objective 1): European population and regional economic data
+- **LAU Boundaries**: Eurostat LAU administrative unit boundaries (2011, 2021, 2024 versions)
+- **UK crosswalks**: Custom mapping for UK local authority changes
+
+## Technical Stack
+
+- **Frontend**: MapLibre GL (vector maps), vanilla JavaScript
+- **Data format**: GeoJSON (chunked for performance)
+- **Styling**: Custom CSS with gradient backgrounds
+- **Hosting**: GitHub Pages
+- **Storage**: Large files managed with Git LFS
+
+## Setup & Development
+
+### Prerequisites
+- Git (with Git LFS support)
+- Node.js (for running local build scripts)
+- Python 3.10+ (for data processing)
+
+### Installation
+
+```bash
+git clone https://github.com/hughsheehy/EuropeanPopulationChange1961_2024.git
+cd EuropeanPopulationChange1961_2024
+git lfs install  # Set up Git LFS
+git lfs pull     # Download large data files
+```
+
+### Running Locally
+
+Open `index.html` in a modern web browser, or use a local server:
+
+```bash
+python -m http.server 8000
+# Visit http://localhost:8000
+```
+
+### Data Processing
+
+The `scripts/` directory contains Python utilities for:
+- Building the map dataset from source ARDECO files
+- Simplifying GeoJSON for web performance
+- Splitting data into manageable chunks
+- Creating crosswalks for boundary changes
+
+## Notes on Large Files
+
+This repository uses **Git LFS** for large GeoJSON and data files. The actual files are stored on GitHub's LFS servers to keep the repository size manageable. When you clone, Git LFS automatically downloads these files.
+
+Some large data files (>100MB) are retained locally but excluded from version control:
+- Full merged datasets
+- High-resolution boundary files
+- Complete time-series CSVs
+
+These are available locally for processing but not pushed to GitHub.
+
+## Contributing
+
+This is a personal research project. For feedback or issues, please open a GitHub issue.
+
+## License
+
+Data sources (ARDECO, Eurostat) are subject to their respective open data licenses.
