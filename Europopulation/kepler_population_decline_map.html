@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARDECO Population Decline Map</title>
+  <link rel="stylesheet" href="./keplergl.min.css">
+  <style>
+    html, body, #app {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #f4efe6;
+      color: #1f2a33;
+    }
+
+    .shell {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(214, 102, 73, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(24, 107, 110, 0.15), transparent 24%),
+        linear-gradient(180deg, #f7f2ea 0%, #efe8db 100%);
+    }
+
+    .map-frame {
+      position: absolute;
+      inset: 0;
+    }
+
+    .panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 20;
+      width: min(360px, calc(100vw - 32px));
+      padding: 16px 18px;
+      border: 1px solid rgba(31, 42, 51, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 252, 247, 0.92);
+      box-shadow: 0 18px 38px rgba(31, 42, 51, 0.14);
+      backdrop-filter: blur(16px);
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #186b6e;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.05;
+      font-weight: 700;
+    }
+
+    .body {
+      margin: 10px 0 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #475569;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .swatch {
+      height: 14px;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        #0d5464 0%,
+        #4f8c9a 20%,
+        #b8d0d7 40%,
+        #f0e7cf 50%,
+        #e3b08d 65%,
+        #cf6b49 82%,
+        #8e1f1f 100%
+      );
+    }
+
+    .legend-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .meta {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #334155;
+    }
+
+    .meta strong {
+      color: #111827;
+    }
+
+    .status {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 20;
+      max-width: min(560px, calc(100vw - 32px));
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(17, 24, 39, 0.82);
+      color: #f8fafc;
+      font-size: 12px;
+      line-height: 1.45;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.26);
+    }
+
+    .status a {
+      color: #a7f3d0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/redux@4.2.1/dist/redux.min.js"></script>
+  <script src="https://unpkg.com/react-redux@7.2.9/dist/react-redux.min.js"></script>
+  <script src="https://unpkg.com/react-is@16.13.1/umd/react-is.production.min.js"></script>
+  <script src="https://unpkg.com/styled-components@5.3.11/dist/styled-components.min.js"></script>
+  <script src="./keplergl.min.js"></script>
+  <script>
+    (function () {
+      const {createElement: h, useEffect, useMemo, useState} = React;
+      const {Provider} = ReactRedux;
+      const {combineReducers, createStore, applyMiddleware, compose} = Redux;
+
+      const datasetId = 'ardeco-population-decline';
+      const geojsonPath = './ARDECO_population_decline_map.geojson';
+      const mapboxToken = 'pk.eyJ1IjoiaHVnaHNoZWVoeSIsImEiOiJjbW94YzhjY2UwMjl5MnFxeGZxNnI5Y3dhIn0.XFnOu0c0hpKgqrwWD7oqVw';
+
+      const reducers = combineReducers({
+        keplerGl: KeplerGl.keplerGlReducer
+      });
+
+      const middlewares = KeplerGl.enhanceReduxMiddleware([]);
+      const store = createStore(reducers, compose(applyMiddleware(...middlewares)));
+
+      const divergingPalette = {
+        name: 'Decline Diverging',
+        type: 'diverging',
+        category: 'Custom',
+        colors: [
+          '#0d5464',
+          '#216a78',
+          '#4f8c9a',
+          '#86aebb',
+          '#b8d0d7',
+          '#f0e7cf',
+          '#e3b08d',
+          '#cf6b49',
+          '#b5412b',
+          '#8e1f1f'
+        ]
+      };
+
+      function getInitialConfig() {
+        return {
+          visState: {
+            layers: [
+              {
+                id: 'decline-layer',
+                type: 'geojson',
+                config: {
+                  dataId: datasetId,
+                  label: 'Population decline %',
+                  color: [181, 65, 43],
+                  columns: {
+                    geojson: '_geojson'
+                  },
+                  isVisible: true,
+                  visConfig: {
+                    opacity: 0.78,
+                    strokeOpacity: 0.2,
+                    thickness: 0.5,
+                    strokeColor: [255, 255, 255],
+                    colorRange: divergingPalette,
+                    radius: 10,
+                    sizeRange: [0, 10],
+                    radiusRange: [0, 50],
+                    heightRange: [0, 500],
+                    elevationScale: 5,
+                    enableElevationZoomFactor: true,
+                    stroked: true,
+                    filled: true,
+                    enable3d: false,
+                    wireframe: false
+                  },
+                  hidden: false,
+                  textLabel: []
+                },
+                visualChannels: {
+                  colorField: {
+                    name: 'population_decline_pct',
+                    type: 'real'
+                  },
+                  colorScale: 'quantile',
+                  strokeColorField: null,
+                  strokeColorScale: 'quantile',
+                  sizeField: null,
+                  sizeScale: 'linear',
+                  heightField: null,
+                  heightScale: 'linear',
+                  radiusField: null,
+                  radiusScale: 'linear'
+                }
+              }
+            ],
+            interactionConfig: {
+              tooltip: {
+                fieldsToShow: {
+                  [datasetId]: [
+                    {name: 'gisco_id'},
+                    {name: 'lau_name'},
+                    {name: 'country_code'},
+                    {name: 'nuts3_code'},
+                    {name: 'earliest_year'},
+                    {name: 'earliest_pop'},
+                    {name: 'latest_year'},
+                    {name: 'latest_pop'},
+                    {name: 'population_change'},
+                    {name: 'population_decline_pct'}
+                  ]
+                },
+                enabled: true
+              },
+              brush: {
+                enabled: false
+              },
+              geocoder: {
+                enabled: false
+              },
+              coordinate: {
+                enabled: false
+              }
+            }
+          },
+          mapState: {
+            bearing: 0,
+            dragRotate: false,
+            latitude: 52.25,
+            longitude: 9.4,
+            pitch: 0,
+            zoom: 3.45,
+            isSplit: false
+          },
+          mapStyle: {
+            styleType: 'positron-lite',
+            topLayerGroups: {},
+            visibleLayerGroups: {
+              label: true,
+              road: true,
+              border: true,
+              building: false,
+              water: true,
+              land: true,
+              '3d building': false
+            },
+            threeDBuildingColor: [218.82023004728602, 223.47597962276103, 223.47597962276103],
+            mapStyles: {
+              'positron-lite': {
+                id: 'positron-lite',
+                label: 'Positron Lite',
+                url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                icon: '',
+                layerGroups: [
+                  {slug: 'label', defaultVisibility: true},
+                  {slug: 'road', defaultVisibility: true},
+                  {slug: 'border', defaultVisibility: true},
+                  {slug: 'building', defaultVisibility: false},
+                  {slug: 'water', defaultVisibility: true},
+                  {slug: 'land', defaultVisibility: true}
+                ]
+              }
+            }
+          }
+        };
+      }
+
+      function toDataset(geojson) {
+        return {
+          info: {
+            id: datasetId,
+            label: 'ARDECO population decline'
+          },
+          data: KeplerGl.processGeojson(geojson)
+        };
+      }
+
+      function roundNumber(value) {
+        if (value === null || value === undefined || Number.isNaN(value)) {
+          return null;
+        }
+        return Math.round(value * 100) / 100;
+      }
+
+      function SummaryPanel() {
+        return h(
+          'div',
+          {className: 'panel'},
+          h('p', {className: 'eyebrow'}, 'Kepler.gl choropleth'),
+          h('h1', {className: 'title'}, 'Population decline by local area'),
+          h(
+            'p',
+            {className: 'body'},
+            'Fill color shows percent decline from the earliest available population value to the latest available value for each area. Red means larger decline; blue-green means growth.'
+          ),
+          h(
+            'div',
+            {className: 'legend'},
+            h('div', {className: 'swatch'}),
+            h(
+              'div',
+              {className: 'legend-scale'},
+              h('span', null, 'Growth'),
+              h('span', null, 'No change'),
+              h('span', null, 'Decline')
+            )
+          ),
+          h(
+            'div',
+            {className: 'meta'},
+            h('div', null, h('strong', null, 'Dataset:'), ' ARDECO hybrid local-area boundaries'),
+            h('div', null, h('strong', null, 'Metric:'), ' ((earliest population - latest population) / earliest population) × 100'),
+            h('div', null, h('strong', null, 'Coverage:'), ' UK uses 2011 GISCO fallback boundaries; unmatched UK rows without 2024 values were excluded.')
+          )
+        );
+      }
+
+      function Status({message}) {
+        return h(
+          'div',
+          {className: 'status'},
+          message
+        );
+      }
+
+      function App() {
+        const [status, setStatus] = useState('Loading GeoJSON and configuring Kepler.gl...');
+
+        useEffect(function () {
+          let cancelled = false;
+
+          async function load() {
+            try {
+              const response = await fetch(geojsonPath);
+              if (!response.ok) {
+                throw new Error('Failed to load map data: ' + response.status + ' ' + response.statusText);
+              }
+
+              const geojson = await response.json();
+              if (cancelled) {
+                return;
+              }
+
+              const features = geojson.features || [];
+              let minDecline = Infinity;
+              let maxDecline = -Infinity;
+
+              for (const feature of features) {
+                const value = feature && feature.properties ? feature.properties.population_decline_pct : null;
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                  if (value < minDecline) minDecline = value;
+                  if (value > maxDecline) maxDecline = value;
+                }
+              }
+
+              store.dispatch(
+                KeplerGl.addDataToMap({
+                  datasets: toDataset(geojson),
+                  options: {
+                    centerMap: true,
+                    readOnly: false
+                  },
+                  config: getInitialConfig()
+                })
+              );
+
+              const minLabel = Number.isFinite(minDecline) ? roundNumber(minDecline) + '%' : 'n/a';
+              const maxLabel = Number.isFinite(maxDecline) ? roundNumber(maxDecline) + '%' : 'n/a';
+              setStatus('Loaded ' + features.length.toLocaleString() + ' areas. Decline scale spans ' + minLabel + ' to ' + maxLabel + '.');
+            } catch (error) {
+              console.error(error);
+              setStatus(
+                'Map load failed. Run a local web server from this folder, then open this page over http://localhost rather than file://. Error: ' +
+                  error.message
+              );
+            }
+          }
+
+          load();
+
+          return function () {
+            cancelled = true;
+          };
+        }, []);
+
+        return h(
+          'div',
+          {className: 'shell'},
+          h(SummaryPanel),
+          h(
+            'div',
+            {className: 'map-frame'},
+            h(KeplerGl.KeplerGl, {
+              id: 'map',
+              width: window.innerWidth,
+              height: window.innerHeight,
+              mapboxApiAccessToken: mapboxToken
+            })
+          ),
+          h(Status, {message: status})
+        );
+      }
+
+      ReactDOM.render(
+        h(Provider, {store: store}, h(App)),
+        document.getElementById('app')
+      );
+    }());
+  </script>
+</body>
+</html>
