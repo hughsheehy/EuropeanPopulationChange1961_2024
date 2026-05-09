@@ -47,16 +47,21 @@ View the map: [GitHub Pages deployment](https://hughsheehy.github.io/EuropeanPop
 ## Setup & Development
 
 ### Prerequisites
-- Git (with Git LFS support)
+- Git
 - Python 3.10+ (for data processing, optional)
+- Git LFS (optional, only needed if modifying large CSV source files)
 
 ### Installation
 
 ```bash
 git clone https://github.com/hughsheehy/EuropeanPopulationChange1961_2024.git
 cd EuropeanPopulationChange1961_2024
-git lfs install  # Set up Git LFS
-git lfs pull     # Download large data files
+```
+
+If you plan to work with the large CSV source files, install Git LFS:
+```bash
+git lfs install
+git lfs pull
 ```
 
 ### Running Locally
@@ -86,14 +91,14 @@ This generates the chunked GeoJSON files that the map loads.
 
 ## Large Files & Storage
 
-### On GitHub (Git LFS)
-The map requires the following files to function, stored with **Git LFS** (~113 MB):
-- `data/ARDECO_change_1961_2024_part1.geojson` – 34 MB
-- `data/ARDECO_change_1961_2024_part2.geojson` – 31 MB
-- `data/ARDECO_change_1961_2024_part3.geojson` – 36 MB
-- `ARDECO_Local_Population_Time-Series–1961-2024.csv` files – 5.7 MB each
+### On GitHub
+The map requires the following files to function (~102 MB total):
+- `data/ARDECO_change_1961_2024_part1.geojson` – 34 MB (served by GitHub Pages)
+- `data/ARDECO_change_1961_2024_part2.geojson` – 31 MB (served by GitHub Pages)
+- `data/ARDECO_change_1961_2024_part3.geojson` – 36 MB (served by GitHub Pages)
+- `ARDECO_Local_Population_Time-Series–1961-2024.csv` files – 5.7 MB each (Git LFS)
 
-When you clone with `git lfs pull`, these files are automatically downloaded.
+Map data files are stored as regular git files for GitHub Pages compatibility. Other CSV files use Git LFS for efficient storage.
 
 ### Local Only (Not on GitHub)
 Large source/processing files (>100MB) are excluded from version control:
@@ -101,7 +106,7 @@ Large source/processing files (>100MB) are excluded from version control:
 - High-resolution boundary files
 - Complete hybrid datasets
 
-These remain on your local machine for data processing but are not pushed to GitHub. Regenerate them using `scripts/build_pages_map_dataset.py` if needed.
+These remain on your local machine for data processing. Regenerate them using `scripts/build_pages_map_dataset.py` if needed.
 
 ## Contributing
 
