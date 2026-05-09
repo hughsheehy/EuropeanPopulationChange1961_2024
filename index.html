@@ -252,10 +252,29 @@
 
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://openmaptiles.github.io/positron-gl-style/style-cdn.json',
+      style: 'https://demotiles.maplibre.org/style.json',
       center: [11.5, 53.5],
       zoom: 3.25,
       attributionControl: true
+    });
+
+    map.on('style.load', () => {
+      const style = map.getStyle();
+      const basemapLayerIds = style.layers
+        .filter(layer => !layer.id.startsWith('areas-'))
+        .map(layer => layer.id);
+
+      basemapLayerIds.forEach(layerId => {
+        const layer = map.getLayer(layerId);
+        if (layer && layer.paint) {
+          Object.keys(layer.paint).forEach(paintProp => {
+            if (paintProp.includes('color') && typeof layer.paint[paintProp] === 'string') {
+              const opacity = layer.paint[paintProp + '-opacity'];
+              map.setPaintProperty(layerId, paintProp + '-opacity', (opacity || 1) * 0.5);
+            }
+          });
+        }
+      });
     });
 
     map.addControl(new maplibregl.NavigationControl({visualizePitch: false}), 'bottom-right');
