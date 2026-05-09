@@ -1,3 +1,12 @@
-/Europopulation/ 
-/original_data/
+# Large GeoJSON and data files (>90MB)
+/Europopulation/ARDECO_Local_Population_Time-Series–1961-2024.merged.geojson
+/Europopulation/ARDECO_Local_Population_Time-Series–1961-2024.hybrid.merged.geojson
+/Europopulation/ARDECO_Local_Population_Time-Series–1961-2024.hybrid.merged.csv
+/Europopulation/ARDECO_Local_Population_Time-Series–1961-2024.lau2021.merged.geojson
+/Europopulation/ARDECO_population_decline_map.geojson
+/Europopulation/LAU_RG_01M_2011_4326.geojson
+/Europopulation/LAU_RG_01M_2021_4326.geojson
+/Europopulation/LAU_RG_01M_2024_4326.geojson
 /data/ARDECO_change_1961_2024_simplified.geojson
+/original-data/LAU_RG_01M_2011_4326.geojson
+/original-data/LAU_RG_01M_2021_4326.geojson
