@@ -10,3 +10,9 @@
 /data/ARDECO_change_1961_2024_simplified.geojson
 /original-data/LAU_RG_01M_2011_4326.geojson
 /original-data/LAU_RG_01M_2021_4326.geojson
+
+# Shapefiles (large binary files)
+*.shp
+*.shx
+*.dbf
+*.prj
