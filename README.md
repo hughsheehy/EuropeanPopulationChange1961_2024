@@ -48,8 +48,7 @@ View the map: [GitHub Pages deployment](https://hughsheehy.github.io/EuropeanPop
 
 ### Prerequisites
 - Git (with Git LFS support)
-- Node.js (for running local build scripts)
-- Python 3.10+ (for data processing)
+- Python 3.10+ (for data processing, optional)
 
 ### Installation
 
@@ -85,16 +84,24 @@ python scripts/build_pages_map_dataset.py
 
 This generates the chunked GeoJSON files that the map loads.
 
-## Notes on Large Files
+## Large Files & Storage
 
-This repository uses **Git LFS** for large GeoJSON and data files. The actual files are stored on GitHub's LFS servers to keep the repository size manageable. When you clone, Git LFS automatically downloads these files.
+### On GitHub (Git LFS)
+The map requires the following files to function, stored with **Git LFS** (~113 MB):
+- `data/ARDECO_change_1961_2024_part1.geojson` – 34 MB
+- `data/ARDECO_change_1961_2024_part2.geojson` – 31 MB
+- `data/ARDECO_change_1961_2024_part3.geojson` – 36 MB
+- `ARDECO_Local_Population_Time-Series–1961-2024.csv` files – 5.7 MB each
 
-Some large data files (>100MB) are retained locally but excluded from version control:
-- Full merged datasets
+When you clone with `git lfs pull`, these files are automatically downloaded.
+
+### Local Only (Not on GitHub)
+Large source/processing files (>100MB) are excluded from version control:
+- Full merged GeoJSON files (ARDECO and LAU boundaries)
 - High-resolution boundary files
-- Complete time-series CSVs
+- Complete hybrid datasets
 
-These are available locally for processing but not pushed to GitHub.
+These remain on your local machine for data processing but are not pushed to GitHub. Regenerate them using `scripts/build_pages_map_dataset.py` if needed.
 
 ## Contributing
 
