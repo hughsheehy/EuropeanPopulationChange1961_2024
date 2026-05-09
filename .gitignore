@@ -16,3 +16,6 @@
 *.shx
 *.dbf
 *.prj
+
+# Chunked map data (generated from source files via scripts)
+/data/ARDECO_change_1961_2024_part*.geojson

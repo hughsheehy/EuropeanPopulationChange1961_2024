@@ -74,8 +74,16 @@ python -m http.server 8000
 The `scripts/` directory contains Python utilities for:
 - Building the map dataset from source ARDECO files
 - Simplifying GeoJSON for web performance
-- Splitting data into manageable chunks
+- Splitting data into manageable chunks (the `ARDECO_change_*_part*.geojson` files loaded by the map)
 - Creating crosswalks for boundary changes
+
+To regenerate the map data:
+
+```bash
+python scripts/build_pages_map_dataset.py
+```
+
+This generates the chunked GeoJSON files that the map loads.
 
 ## Notes on Large Files
 
