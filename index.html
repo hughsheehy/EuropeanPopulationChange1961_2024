@@ -25,7 +25,6 @@
     #map {
       position: absolute;
       inset: 0;
-      filter: saturate(0.15);
     }
 
     .panel {
@@ -253,7 +252,7 @@
 
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://demotiles.maplibre.org/style.json',
+      style: 'https://basemaps.cartocdn.com/gl/positron-nolabels/style.json',
       center: [11.5, 53.5],
       zoom: 3.25,
       attributionControl: true
